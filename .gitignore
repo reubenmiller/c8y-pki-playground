@@ -3,3 +3,4 @@
 *.p7b
 FEEDBACK.md
 .DS_Store
+examples/rust/c8y_decoder/target/
