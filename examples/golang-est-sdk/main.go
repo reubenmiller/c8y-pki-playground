@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/thales-e-security/estclient"
@@ -50,6 +51,7 @@ func toBase64(data []byte) string {
 }
 
 const csrPEMBlockType = "CERTIFICATE REQUEST"
+const certPEMBlockType = "CERTIFICATE"
 
 func panicOnError(err error) {
 	if err != nil {
@@ -68,12 +70,32 @@ func pemCSR(derBytes []byte) []byte {
 	return out
 }
 
+func pemCert(derBytes []byte) []byte {
+	pemBlock := &pem.Block{
+		Type:    certPEMBlockType,
+		Headers: nil,
+		Bytes:   derBytes,
+	}
+	out := pem.EncodeToMemory(pemBlock)
+	return out
+}
+
 func main() {
 
-	id := "golang-est-client001"
-	secret := "as98uasdf98aosdfu08lk"
+	id := os.Getenv("DEVICE_ID")
+	secret := os.Getenv("DEVICE_OTP")
+	if len(os.Args) >= 3 {
+		id = os.Args[1]
+		secret = os.Args[2]
+	}
+	if id == "" || secret == "" {
+		panic("Missing required arguments. <DEVICE_ID> <OTP>")
+	}
 
-	client := estclient.NewEstClient("cms-sandbox3.dev.c8y.io:443/.well-known")
+	host := strings.TrimPrefix(os.Getenv("C8Y_HOST"), "https://")
+	fmt.Printf("host=%s, id=%s, secret=%s", host, id, secret)
+
+	client := estclient.NewEstClient(host + ":443")
 	// estclient.NewEstClientWithOptions("host", estclient.ClientOptions{
 
 	// 	TLSTrustAnchor: &x509.Certificate{
@@ -100,11 +122,6 @@ func main() {
 	cert, err := client.SimpleEnroll(authData, req)
 	panicOnError(err)
 
-	fmt.Printf("Initial cert (DER): %x\n", cert.Raw)
-
-	// fmt.Printf("EST Root Cert: %+v\n", cacerts.EstTA.Subject)
-	// fmt.Printf("Old EST Root Cert: %+v\n", cacerts.OldWithOld)
-	// fmt.Printf("Old Cert Signed By New Key: %+v\n", cacerts.OldWithNew)
-	// fmt.Printf("New Cert Signed By Old Key: %+v\n", cacerts.NewWithOld)
-	// fmt.Printf("Other chain certs: %+v\n", cacerts.EstChainCerts)
+	fmt.Printf("Device Certificate (DER): %x\n", toBase64(cert.Raw))
+	fmt.Printf("Device Certificate (PEM): \n%s\n", pemCert(req.Raw))
 }

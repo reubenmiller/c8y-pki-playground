@@ -29,6 +29,7 @@ import (
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/base64"
+	"fmt"
 	"math/big"
 	"reflect"
 
@@ -59,7 +60,20 @@ type algAndHash struct {
 // readCertificate reads a single certificate from a base64-encoded PKCS #7 structure. It
 // will return an error if there is more than one certificate contained.
 func readCertificate(p7data string) (*x509.Certificate, error) {
-	der, err := base64.StdEncoding.DecodeString(p7data)
+
+	// wrap data
+	p7dataWrapped := make([]byte, 0, len(p7data))
+	for i := 0; i < len(p7data); i++ {
+		if i%64 == 0 && i != 0 {
+			p7dataWrapped = append(p7dataWrapped, '\n')
+		}
+		p7dataWrapped = append(p7dataWrapped, p7data[i])
+
+	}
+
+	fmt.Printf("p7data:\n%s\n", p7dataWrapped)
+
+	der, err := base64.StdEncoding.DecodeString(string(p7dataWrapped))
 	if err != nil {
 		return nil, errors.Wrap(err, "could not decode base64 message")
 	}

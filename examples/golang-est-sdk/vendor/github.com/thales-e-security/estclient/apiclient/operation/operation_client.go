@@ -65,8 +65,16 @@ func (a *Client) Simpleenroll(params *SimpleenrollParams, authInfo runtime.Clien
 		ID:                 "simpleenroll",
 		Method:             "POST",
 		PathPattern:        "/simpleenroll",
-		ProducesMediaTypes: []string{"text/plain"},
-		ConsumesMediaTypes: []string{"application/pkcs10"},
+		// Accept Type
+		// ProducesMediaTypes: []string{"text/plain"},
+		ProducesMediaTypes: []string{"application/pkcs7-mime"},
+		// ProducesMediaTypes: []string{"application/pkcs10"},
+
+		// Content-Type
+		ConsumesMediaTypes: []string{"text/plain"},	// 406 Not Acceptable
+		// ConsumesMediaTypes: []string{"application/pkcs10"},	// 415 Unsupported format
+		// ConsumesMediaTypes: []string{"application/octet-stream"},
+		// ConsumesMediaTypes: []string{"application/octet-stream"},
 		Schemes:            []string{"https"},
 		Params:             params,
 		Reader:             &SimpleenrollReader{formats: a.formats},

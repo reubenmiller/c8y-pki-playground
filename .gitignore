@@ -1,0 +1,5 @@
+.env
+.venv/
+*.p7b
+FEEDBACK.md
+.DS_Store
