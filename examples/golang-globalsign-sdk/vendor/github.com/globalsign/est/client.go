@@ -526,7 +526,10 @@ func checkResponseError(r *http.Response) error {
 func (c *Client) uri(endpoint string) string {
 	var builder strings.Builder
 
-	builder.WriteString("https://")
+	// Allow caller to control the scheme
+	if !strings.Contains(c.Host, "://") {
+		builder.WriteString("https://")
+	}
 	builder.WriteString(c.Host)
 	builder.WriteString(estPathPrefix)
 
