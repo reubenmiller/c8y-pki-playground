@@ -258,7 +258,7 @@ func main() {
 		Password: secret,
 	}
 
-	shouldEnroll := true
+	shouldEnroll := false
 
 	if shouldEnroll {
 		banner("Enrolling device")
@@ -282,4 +282,17 @@ func main() {
 	if _, err := RenewCertificate(opts); err != nil {
 		panic(err)
 	}
+	// Reconnect (to verify the certificate)
+	if err := RunTedgeCommand("reconnect", "c8y"); err != nil {
+		panic(err)
+	}
+}
+
+func base64Decode(src []byte) ([]byte, error) {
+	dec := make([]byte, base64.StdEncoding.DecodedLen(len(src)))
+	n, err := base64.StdEncoding.Decode(dec, src)
+	if err != nil {
+		return nil, err
+	}
+	return dec[:n], nil
 }
